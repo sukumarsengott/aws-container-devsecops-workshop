@@ -592,15 +592,15 @@
     <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo Copying secrets_config.json to the application directory</span>
     <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">cp secrets_config.json $CODEBUILD_SRC_DIR_AppSource/secrets_config.json</span>
     <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo Switching to the application directory</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo Installing pip and truffleHog</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py</span> 
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">python get-pip.py</span> 
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">pip install truffleHog</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo Installing truffleHog</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">which pip3 &amp;&amp; pip3 --version</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">which python3 &amp;&amp; python3 --version</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">pip3 install &#39;truffleHog&gt;=2.1.0,&lt;3.0&#39;</span>
   <span class="l l-Scalar l-Scalar-Plain">build</span><span class="p p-Indicator">:</span>
     <span class="l l-Scalar l-Scalar-Plain">commands</span><span class="p p-Indicator">:</span>
     <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo Build started on `date`</span>
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo Scanning with truffleHog...</span>          
-    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">trufflehog --regex --rules secrets_config.json --entropy=False &quot;$APP_REPO_URL&quot;</span> 
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo Scanning with truffleHog...</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">trufflehog --regex --rules secrets_config.json --entropy=False &quot;$APP_REPO_URL&quot;</span>
   <span class="l l-Scalar l-Scalar-Plain">post_build</span><span class="p p-Indicator">:</span>
     <span class="l l-Scalar l-Scalar-Plain">commands</span><span class="p p-Indicator">:</span>
     <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo Build completed on `date`</span>
