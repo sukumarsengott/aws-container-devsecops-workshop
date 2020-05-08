@@ -298,7 +298,7 @@ Updating the Pull Request branch automatically triggers the pipeline again.  Thi
 
 ## View Image
 
-The last stage of the pipeline builds the image, publishes it to AWS ECR, and then merges athe Pull Request.  You'll see in the feedback that a message is posted regarding the outcome of this stage and you'll notice that the Pull Request has been merged.
+The last stage of the pipeline builds the image, publishes it to AWS ECR, and then merges the Pull Request.  You'll see in the feedback that a message is posted regarding the outcome of this stage and you'll notice that the Pull Request has been merged.
 
 1. Go to the <a href="https://us-east-2.console.aws.amazon.com/codesuite/codecommit/repositories/container-devsecops-wksp-app/pull-requests?region=us-east-2&status=Closed" target="_blank">CodeCommit console</a>
 2. Click on the latest Pull Request.  You may need to change the filter to "Closed Pull Requests" since the last stage publishes the image, merges the code, and closes the PR.
