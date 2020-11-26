@@ -50,8 +50,8 @@ You will be doing the majority of the workshop using the <a href="https://aws.am
 2.	Click **Open IDE** in the **container-devsecops-wksp-ide** environment.  This will take you to your IDE in a new tab.  Always keep this tab open 
 
 ??? question "Where is my terminal window?"
-    If a new terminal session was not opened automatically on creation, go to 'Window' -> 'New Terminal'
-    Your main working directory will be ~/environment
+    If a new terminal session was not opened automatically on creation, go to ```'Window' -> 'New Terminal'```
+    Your main working directory will be ```~/environment```
 
 ## Clone repositories
 
