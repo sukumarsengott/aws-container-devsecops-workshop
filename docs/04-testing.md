@@ -279,7 +279,7 @@ Commit your application source code changes:
 ```bash
 cd /home/ec2-user/environment/sample-application
 git add Dockerfile
-git commit -m "Update sqlite version to fix CVE-2019-8457"
+git commit -m "Update flask-cors version to fix CVE-2020-25032"
 git push -u origin development
 ```
 
