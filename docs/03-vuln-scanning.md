@@ -35,10 +35,11 @@ phases:
     commands:
       - $ANCHORE_CMD image add $IMAGE
       - while [ $($ANCHORE_CMD --json image get $IMAGE | jq -r '.[0].analysis_status') != "analyzed" ]; do sleep 1; done
-      - $ANCHORE_CMD --json image vuln $IMAGE os > scan_results.json
+      - $ANCHORE_CMD --json image vuln $IMAGE all > scan_results.json
       - jq -c --arg image $IMAGE --arg arn $IMAGE_ARN '. + {image_id:$image, image_arn:$arn}' scan_results.json >> tmp.json
       - mv tmp.json scan_results.json
       - aws lambda invoke --function-name $FUNCTION_ARN --invocation-type RequestResponse --payload file://scan_results.json outfile
+      - cat scan_results.json |  jq -r --arg threshold $FAIL_WHEN '.vulnerabilities[] | select(.severity==$threshold)'
       - if cat scan_results.json |  jq -r --arg threshold $FAIL_WHEN '.vulnerabilities[] | (.severity==$threshold)' | grep -q true; then echo "Vulnerabilties Found" && exit 1; fi
 ```
 
