@@ -59,7 +59,9 @@ feeds:
       # Warning: enabling the packages and nvd sync causes the service to require much
       #   more memory to do process the significant data volume. We recommend at least 4GB available for the container
       packages: False
-      nvd: False
+      nvd: false
+      nvdv2: True
+      github: True
       # Enabling snyk syncs snyk vulnerability data from an on-premise anchore enterprise feeds service. Please contact
       # anchore support for finding out more about this service
       snyk: False
