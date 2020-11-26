@@ -1207,12 +1207,12 @@ Resources:
             pre_build: 
               commands:
                 - apt-get update && apt-get install -y python-dev jq
-                - docker pull anchore/engine-cli:v0.3.4
+                - docker pull anchore/engine-cli:v0.8.2
                 - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py  
                 - python get-pip.py
                 - pip install awscli
                 - $(aws ecr get-login --no-include-email)
-                - ANCHORE_CMD="docker run -e ANCHORE_CLI_URL=$ANCHORE_CLI_URL -e ANCHORE_CLI_USER=$ANCHORE_CLI_USER -e ANCHORE_CLI_PASS=$ANCHORE_CLI_PASS anchore/engine-cli:v0.3.4 anchore-cli"
+                - ANCHORE_CMD="docker run -e ANCHORE_CLI_URL=$ANCHORE_CLI_URL -e ANCHORE_CLI_USER=$ANCHORE_CLI_USER -e ANCHORE_CLI_PASS=$ANCHORE_CLI_PASS anchore/engine-cli:v0.8.2 anchore-cli"
                 - $ANCHORE_CMD registry add $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com awsauto awsauto --registry-type=awsecr || return 0
             build: 
               commands:

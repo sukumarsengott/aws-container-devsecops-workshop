@@ -630,7 +630,7 @@ Resources:
                               'ProductArn': product_arn,
                               'ProductFields': {
                                 'ProviderName': 'Anchore',
-                                'ProviderVersion': 'v0.3.4',
+                                'ProviderVersion': 'v0.8.2',
                               },
                               'GeneratorId': uuid,
                               'AwsAccountId': account_id,
