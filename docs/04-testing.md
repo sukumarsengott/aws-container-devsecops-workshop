@@ -258,11 +258,8 @@ Since the build fails the vulnerability analysis stage we need to fix the issue 
 
     ![vuln-description](images/04-vuln-description.png)
 
-    Follow the URL in the [**Source URL**](http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-8457) to see additional information about the reported vulnerability.
+    Follow the URL in the [**Source URL**](https://nvd.nist.gov/vuln/detail/CVE-2020-25032) to see additional information about the reported vulnerability.
 
-    See the recommended **Remediation**. E.g.
-
-    ![vuln-remediation](images/04-vuln-remediation.png)
 
 !!!info "Image vulnerabilities"
 
@@ -271,9 +268,9 @@ Since the build fails the vulnerability analysis stage we need to fix the issue 
         **Fix**: Containers should be looked at as immutable and as such shouldn't be patched directly. Instead the vulernabilities should be fixed upstream in the source code and configuration of the image and then the image should be rebuilt and published.  This ensures that all new containers instantiated from the image don't include the vulnerabilities.
 
         Update the affected package in Dockerfile:
-        Following the recommended **Remediation** update the `sqlite` version to `3.28.0-r0` in the Dockerfile.
+        Following the recommended **Remediation** update the `flask-cors` version to `3.0.9` in the Dockerfile.
 
-        `RUN apk add --no-cache sqlite-libs=3.28.0-r0`
+        `flask-cors <= 3.0.9`
 
         **Reference**: <a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-190.pdf" target="_blank">NIST SP 800-190: Application Container Security Guide - 3.1.1</a>
 
