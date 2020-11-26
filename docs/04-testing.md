@@ -51,7 +51,7 @@ Now you can test your pipeline to see how your Pull Requests result with an imag
 ## Create a Pull Request
 
 ```bash
-aws codecommit create-pull-request \
+    aws codecommit create-pull-request \
     --title "Updated Maintainer" \
     --description "Please review these changes." \
     --targets repositoryName=container-devsecops-wksp-app,sourceReference=development,destinationReference=master
@@ -82,7 +82,7 @@ In the feedback you should see multiple defects that were identified by the Dock
 
         **Description**:  Using externally provided images can result in the same types of risks that external software traditionally has, such as introducing malware, leaking data, or including components with vulnerabilities. To prevent the use of externally provided images you should only pull images from trusted registries.
 
-        **Fix**: Add `- docker.io` under ***trustedRegistries***.  
+        **Fix**: Add `- http://hub.docker.com/` under ***trustedRegistries***.  
         
         **Explanation**:  Since the image is pulling from Dockerhub we can include it on the list so that the build is able to pass.  Adding Dockerhub is purely for testing purposes, in reality you would whitelist trusted registries that you host yourself or registries hosted by trusted 3rd parties.
 
