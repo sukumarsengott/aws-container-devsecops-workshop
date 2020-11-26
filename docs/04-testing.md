@@ -110,9 +110,7 @@ The next two defects can be fixed by modifying the Dockerfile.
 
         **Fix**: Change USER to a non privileged user.  Add the following to the Dockerfile **underneath RUN apk**:
 
-        `RUN addgroup -S sasquatch`
-
-        `RUN adduser -S sasquatch -G sasquatch`
+        `RUN adduser sasquatch -D`
 
         Next, replace `USER root` with `USER sasquatch`
 
