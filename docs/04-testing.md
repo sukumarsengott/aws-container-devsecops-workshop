@@ -38,8 +38,7 @@ Now you can test your pipeline to see how your Pull Requests result with an imag
 1.	Within your Cloud9 IDE expand your **sample application** on the left side.
 2.  Open the **Dockerfile**.
 3.  Add a name to the Label line (Currently set to "Sasquatch").
-4.  Update the version for `sqlite-libs` to the latest version published at [Alpine Linux Repo](https://pkgs.alpinelinux.org/package/edge/main/x86/sqlite-libs). Please, copy the whole version string, similar to, `3.26.0-r3`. 
-5.  Push your commit.
+4.  Push your commit.
 
 ```bash
     cd /home/ec2-user/environment/sample-application
