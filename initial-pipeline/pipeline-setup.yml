@@ -21,6 +21,11 @@ Parameters:
       - Critical
     Description: Threshold to fail the pipeline if app image has vulnerabilities
 
+  BucketName:
+    Type: String
+    Default: sa-security-specialist-workshops-us-east-2
+    Description: Source bucket for workshop CloudFormation yaml's
+
 Metadata: 
   AWS::CloudFormation::Interface:
     ParameterGroups: 
@@ -119,7 +124,7 @@ Resources:
       Description: "Creates initial commits to respository."
       Role: !GetAtt 'LambdaRepositoryInitialCommitRole.Arn'
       Code: 
-        S3Bucket: 'sa-security-specialist-workshops-us-east-2'
+        S3Bucket: !Ref BucketName
         S3Key: 'devsecops/containers/initial-commit.zip'
       Runtime: "python2.7"
       Timeout: "35"
