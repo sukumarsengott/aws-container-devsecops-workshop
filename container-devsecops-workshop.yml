@@ -24,6 +24,7 @@ Resources:
     Properties:
       Parameters:
         ResourceName: container-devsecops-wksp
+        BucketName: !Ref BucketName
       TemplateURL: !Join [ '/', [ 'https://s3.amazonaws.com', !Ref BucketName, 'devsecops/containers/anchore-fargate.yml'  ] ]
 
   InitialPipeline:
@@ -33,6 +34,7 @@ Resources:
       Parameters:
         ResourceName: container-devsecops-wksp
         FailWhen: High
+        BucketName: !Ref BucketName
       TemplateURL: !Join [ '/', [ 'https://s3.amazonaws.com', !Ref BucketName, 'devsecops/containers/pipeline-setup.yml'  ] ]
   
 
