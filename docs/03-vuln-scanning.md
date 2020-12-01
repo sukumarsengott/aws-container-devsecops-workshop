@@ -19,12 +19,12 @@ phases:
   pre_build: 
     commands:
       - apt-get update && apt-get install -y python-dev jq
-      - docker pull anchore/engine-cli:v0.3.4
+      - docker pull anchore/engine-cli:v0.8.2
       - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py  
       - python get-pip.py
       - pip install awscli
       - $(aws ecr get-login --no-include-email)
-      - ANCHORE_CMD="docker run -e ANCHORE_CLI_URL=$ANCHORE_CLI_URL -e ANCHORE_CLI_USER=$ANCHORE_CLI_USER -e ANCHORE_CLI_PASS=$ANCHORE_CLI_PASS anchore/engine-cli:v0.3.4 anchore-cli"
+      - ANCHORE_CMD="docker run -e ANCHORE_CLI_URL=$ANCHORE_CLI_URL -e ANCHORE_CLI_USER=$ANCHORE_CLI_USER -e ANCHORE_CLI_PASS=$ANCHORE_CLI_PASS anchore/engine-cli:v0.8.2 anchore-cli"
       - $ANCHORE_CMD registry add $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com awsauto awsauto --registry-type=awsecr || return 0
   build: 
     commands:
@@ -35,10 +35,11 @@ phases:
     commands:
       - $ANCHORE_CMD image add $IMAGE
       - while [ $($ANCHORE_CMD --json image get $IMAGE | jq -r '.[0].analysis_status') != "analyzed" ]; do sleep 1; done
-      - $ANCHORE_CMD --json image vuln $IMAGE os > scan_results.json
+      - $ANCHORE_CMD --json image vuln $IMAGE all > scan_results.json
       - jq -c --arg image $IMAGE --arg arn $IMAGE_ARN '. + {image_id:$image, image_arn:$arn}' scan_results.json >> tmp.json
       - mv tmp.json scan_results.json
       - aws lambda invoke --function-name $FUNCTION_ARN --invocation-type RequestResponse --payload file://scan_results.json outfile
+      - cat scan_results.json |  jq -r --arg threshold $FAIL_WHEN '.vulnerabilities[] | select(.severity==$threshold)'
       - if cat scan_results.json |  jq -r --arg threshold $FAIL_WHEN '.vulnerabilities[] | (.severity==$threshold)' | grep -q true; then echo "Vulnerabilties Found" && exit 1; fi
 ```
 

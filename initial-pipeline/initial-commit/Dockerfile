@@ -2,8 +2,6 @@ FROM python:latest
 
 LABEL maintainer="Sasquatch"
 
-RUN apk add --no-cache sqlite-libs=3.26.0-r3
-
 COPY . /app
 
 WORKDIR /app

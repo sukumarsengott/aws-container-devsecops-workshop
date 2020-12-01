@@ -1,7 +1,11 @@
 from flask import Flask
+from flask_cors import CORS
 app = Flask(__name__)
-@app.route("/")
+CORS(app)
+
 access key = AKIAZELJK6BJF5234HAC
+
+@app.route("/")
 def hello():
     return "Hello World!"
 if __name__ == "__main__":
