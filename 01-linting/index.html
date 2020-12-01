@@ -445,20 +445,21 @@
 <span class="nt">phases</span><span class="p">:</span>
     <span class="nt">pre_build</span><span class="p">:</span>
         <span class="nt">commands</span><span class="p">:</span>
-        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo Copying hadolint.yml to the application directory</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo &quot;Copying hadolint.yml to the application directory&quot;</span>
         <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">cp hadolint.yml $CODEBUILD_SRC_DIR_AppSource/hadolint.yml</span>
-        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo Switching to the application directory</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo &quot;Switching to the application directory&quot;</span>
         <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">cd $CODEBUILD_SRC_DIR_AppSource</span>
-        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo Pulling the hadolint docker image</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo &quot;Pulling the hadolint docker image&quot;</span>
         <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">docker pull hadolint/hadolint:v1.16.2</span>
     <span class="nt">build</span><span class="p">:</span>
         <span class="nt">commands</span><span class="p">:</span>
-        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo Build started on `date`</span>
-        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo Scanning with Hadolint...</span>          
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo &quot;Build started on $(date)&quot;</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo &quot;Scanning with Hadolint...&quot;</span>        
         <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">result=`docker run --rm -i -v ${PWD}/hadolint.yml:/.hadolint.yaml hadolint/hadolint:v1.16.2 hadolint -f json - &lt; Dockerfile`</span>
     <span class="nt">post_build</span><span class="p">:</span>
         <span class="nt">commands</span><span class="p">:</span>
-        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo $result</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo &quot;Lint Results:&quot;</span>
+        <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo $result | jq .</span> 
         <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">aws ssm put-parameter --name &quot;codebuild-dockerfile-results&quot; --type &quot;String&quot; --value &quot;$result&quot; --overwrite</span>
         <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">echo Build completed on `date`</span>
 </code></pre></div>

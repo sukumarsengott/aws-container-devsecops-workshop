@@ -426,12 +426,12 @@
   <span class="nt">pre_build</span><span class="p">:</span> 
     <span class="nt">commands</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">apt-get update &amp;&amp; apt-get install -y python-dev jq</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">docker pull anchore/engine-cli:v0.3.4</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">docker pull anchore/engine-cli:v0.8.2</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py</span>  
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">python get-pip.py</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">pip install awscli</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">$(aws ecr get-login --no-include-email)</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">ANCHORE_CMD=&quot;docker run -e ANCHORE_CLI_URL=$ANCHORE_CLI_URL -e ANCHORE_CLI_USER=$ANCHORE_CLI_USER -e ANCHORE_CLI_PASS=$ANCHORE_CLI_PASS anchore/engine-cli:v0.3.4 anchore-cli&quot;</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">ANCHORE_CMD=&quot;docker run -e ANCHORE_CLI_URL=$ANCHORE_CLI_URL -e ANCHORE_CLI_USER=$ANCHORE_CLI_USER -e ANCHORE_CLI_PASS=$ANCHORE_CLI_PASS anchore/engine-cli:v0.8.2 anchore-cli&quot;</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">$ANCHORE_CMD registry add $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com awsauto awsauto --registry-type=awsecr || return 0</span>
   <span class="nt">build</span><span class="p">:</span> 
     <span class="nt">commands</span><span class="p">:</span>
@@ -442,10 +442,11 @@
     <span class="nt">commands</span><span class="p">:</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">$ANCHORE_CMD image add $IMAGE</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">while [ $($ANCHORE_CMD --json image get $IMAGE | jq -r &#39;.[0].analysis_status&#39;) != &quot;analyzed&quot; ]; do sleep 1; done</span>
-      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">$ANCHORE_CMD --json image vuln $IMAGE os &gt; scan_results.json</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">$ANCHORE_CMD --json image vuln $IMAGE all &gt; scan_results.json</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">jq -c --arg image $IMAGE --arg arn $IMAGE_ARN &#39;. + {image_id:$image, image_arn:$arn}&#39; scan_results.json &gt;&gt; tmp.json</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">mv tmp.json scan_results.json</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">aws lambda invoke --function-name $FUNCTION_ARN --invocation-type RequestResponse --payload file://scan_results.json outfile</span>
+      <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">cat scan_results.json |  jq -r --arg threshold $FAIL_WHEN &#39;.vulnerabilities[] | select(.severity==$threshold)&#39;</span>
       <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">if cat scan_results.json |  jq -r --arg threshold $FAIL_WHEN &#39;.vulnerabilities[] | (.severity==$threshold)&#39; | grep -q true; then echo &quot;Vulnerabilties Found&quot; &amp;&amp; exit 1; fi</span>
 </code></pre></div>
 
