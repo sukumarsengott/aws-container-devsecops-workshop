@@ -111,7 +111,7 @@ The next two defects can be fixed by modifying the Dockerfile.
 
         **Description**: To adhere the principals of least privileges, your containers should not be running as root.  Most containerized processes are application services and therefore don’t require root access. 
 
-        **Fix**: Change USER to a non privileged user.  Add the following to the Dockerfile **underneath RUN apk**:
+        **Fix**: Change USER to a non privileged user.  Add the following to the Dockerfile **underneath LABEL maintainer**:
 
         `RUN adduser sasquatch -D`
 
