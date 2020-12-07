@@ -81,7 +81,11 @@ In the feedback you should see multiple defects that were identified by the Dock
 
         **Description**:  Using externally provided images can result in the same types of risks that external software traditionally has, such as introducing malware, leaking data, or including components with vulnerabilities. To prevent the use of externally provided images you should only pull images from trusted registries.
 
-        **Fix**: Add `- http://hub.docker.com/` under ***trustedRegistries***.  
+        **Fix**: Under ***trustedRegistries*** add 
+            ```
+            - http://hub.docker.com/
+            - docker.io
+            ```   
         
         **Explanation**:  Since the image is pulling from Dockerhub we can include it on the list so that the build is able to pass.  Adding Dockerhub is purely for testing purposes, in reality you would whitelist trusted registries that you host yourself or registries hosted by trusted 3rd parties.
 
