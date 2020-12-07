@@ -74,6 +74,7 @@ Resources:
     DependsOn: 
       - AppRepository
       - ConfigRepository
+      - LambdaRepositoryInitialCommit
     Type: Custom::CustomResource
     Properties:
       ServiceToken: !GetAtt 'LambdaRepositoryInitialCommit.Arn'
