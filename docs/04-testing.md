@@ -82,10 +82,9 @@ In the feedback you should see multiple defects that were identified by the Dock
         **Description**:  Using externally provided images can result in the same types of risks that external software traditionally has, such as introducing malware, leaking data, or including components with vulnerabilities. To prevent the use of externally provided images you should only pull images from trusted registries.
 
         **Fix**: Under ***trustedRegistries*** add 
-            ```
+        
             - http://hub.docker.com/
-            - docker.io
-            ```   
+            - docker.io  
         
         **Explanation**:  Since the image is pulling from Dockerhub we can include it on the list so that the build is able to pass.  Adding Dockerhub is purely for testing purposes, in reality you would whitelist trusted registries that you host yourself or registries hosted by trusted 3rd parties.
 
@@ -232,9 +231,37 @@ git push -u origin development
 !!! info "Embedded clear text secrets"
     **Description**: Many applications require secrets to enable communication with other serivces or backend components.  When an application is packaged into an image, these secrets can be embedded directly into the image.  This creates a security risk in which anyone with access to the image can easily obtain the secrets.
 
-    **Fix**: Remove secrets from source code and leverage a secure solution for managing secrets like <a href="https://aws.amazon.com/secrets-manager/" target="_blank">AWS Secrets Manager</a> or <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html" target="_blank">AWS Systems Manager Parameter Store</a>.
+    **Fix**: Remove secrets from source code and leverage a secure solution for managing secrets like 
+    <a href="https://aws.amazon.com/secrets-manager/" target="_blank">AWS Secrets Manager</a> 
+    or <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html" target="_blank">AWS Systems Manager Parameter Store</a>.
 
-    **Explanation**: Best practice is to the remove secrets from all previous commits and rotate any credential found but due to time constraints you removed the secret and modified the scanning tool to only scan new commits.
+    **Explanation**: Best practice is to the remove secrets from all previous commits and rotate any credential found. 
+    For simplicity in the workshop, we removed the secret and modified the scanning tool to only scan new commits.
+    To remove the commit from git's history (other developers will need to reclone the repo afterward):
+    
+        # After we removed the secret from the index.py file
+        cd /home/ec2-user/environment/sample-application
+        
+        # Need to have a clean working directory
+        git add *
+        git commit -m "Removing secrets from app.py"
+        
+        # Need a perserve a copy of the app file
+        cp app/index.py /home/ec2-user/environment/tmp_index.py
+        
+        # Remove the file from all of git history, other developers will need to reclone repo
+        git filter-branch --force --index-filter \
+          "git rm --cached --ignore-unmatch app/index.py" \
+          --prune-empty --tag-name-filter cat -- --all
+          git push --force --verbose --dry-run
+          git push --force
+          
+        # git removes empty dir's so we need to remake it
+        mkdir app
+        
+        # restore the app file from disk
+        cp /home/ec2-user/environment/tmp_index.py app/index.py
+        rm /home/ec2-user/environment/tmp_index.py
 
     **Reference**: <a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-190.pdf" target="_blank">NIST SP 800-190: Application Container Security Guide - 3.1.4</a>
 
