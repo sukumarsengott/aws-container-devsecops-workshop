@@ -10,7 +10,7 @@ Now that you have integrated multiple types of security testing into your pipeli
 
 1. **Commit**: Developer makes a commit to the *Development* branch.
 2. **Pull Request**: Developer makes a Pull Request
-    * Source Branch: *Developement*
+    * Source Branch: *Development*
     * Destination Branch: *Master*
 3. **Triggers Rule**: A CloudWatch Event Rule is triggered based on the following events:
     * *pullRequestSourceBranchUpdated*
@@ -25,11 +25,11 @@ Now that you have integrated multiple types of security testing into your pipeli
     *  CodeCommit repository: *container-devsecops-wksp-config (master branch)*
 7. **Dockerfile Linting Stage**: This stage pulls in the artifacts from S3 and uses Hadolint (build spec file and configuration file pulled in from S3) to lint the Dockerfile to ensure it adheres to best practices.
 8.  **Secrets Scanning Stage**: This stage runs high signal regex checks directly against the CodeCommit Repository (*container-devsecops-wksp-app - development branch*)
-9.  **Vulnerability Scanning Stage**: This stage builds the container image, pushes it to ECR, and triggers an Anchore vulnerability assessment against the image.  If the scan results include any vulnerabilites that meet or exceed the threshold the build fails.  If the vulnerabilities are lower than the set threshold, the CodeBuild project will invoke a Lambda function with the scan results as the payload.  The Lambda function will then push the vulnerabilities into AWS Security Hub for future triaging, since the risk for those have been accepted.
-10.  **Publish Imaeg**: This last stage builds the image using the destination commit hash as the tag and publishes it to AWS ECR.
+9.  **Vulnerability Scanning Stage**: This stage builds the container image, pushes it to ECR, and triggers an Anchore vulnerability assessment against the image.  If the scan results include any vulnerabilities that meet or exceed the threshold the build fails.  If the vulnerabilities are lower than the set threshold, the CodeBuild project will invoke a Lambda function with the scan results as the payload.  The Lambda function will then push the vulnerabilities into AWS Security Hub for future triaging, since the risk for those have been accepted.
+10.  **Publish Image**: This last stage builds the image using the destination commit hash as the tag and publishes it to AWS ECR.
 11. **CodeBuild Triggers**: If any CodeBuild Project fails a CloudWatch Event Rule is triggered.
 12. **Triggers Lambda Function**: The Lambda Function is setup as a target for the CloudWatch Event Rule and is invoked after the CloudWatch Event Rule is triggered.
-13. **Adds Feedback to Pull Request**:  The Lambda Function takes the results from each stage and CodeBuild project and posts a comment back to the Pull Requst.  This gives the developers fast feedback so they're able to fix any issues that are identified through the pipeline.
+13. **Adds Feedback to Pull Request**:  The Lambda Function takes the results from each stage and CodeBuild project and posts a comment back to the Pull Request.  This gives the developers fast feedback so they're able to fix any issues that are identified through the pipeline.
 
 ## Make a commit
 
@@ -229,7 +229,7 @@ git push -u origin development
 ```
 
 !!! info "Embedded clear text secrets"
-    **Description**: Many applications require secrets to enable communication with other serivces or backend components.  When an application is packaged into an image, these secrets can be embedded directly into the image.  This creates a security risk in which anyone with access to the image can easily obtain the secrets.
+    **Description**: Many applications require secrets to enable communication with other services or backend components.  When an application is packaged into an image, these secrets can be embedded directly into the image.  This creates a security risk in which anyone with access to the image can easily obtain the secrets.
 
     **Fix**: Remove secrets from source code and leverage a secure solution for managing secrets like 
     <a href="https://aws.amazon.com/secrets-manager/" target="_blank">AWS Secrets Manager</a> 
@@ -237,7 +237,9 @@ git push -u origin development
 
     **Explanation**: Best practice is to the remove secrets from all previous commits and rotate any credential found. 
     For simplicity in the workshop, we removed the secret and modified the scanning tool to only scan new commits.
-    To remove the commit from git's history (other developers will need to reclone the repo afterward):
+    
+    
+    **Optional**: To remove the commit from git's history (other developers will need to reclone the repo afterward):
     
         # After we removed the secret from the index.py file
         cd /home/ec2-user/environment/sample-application
@@ -253,8 +255,12 @@ git push -u origin development
         git filter-branch --force --index-filter \
           "git rm --cached --ignore-unmatch app/index.py" \
           --prune-empty --tag-name-filter cat -- --all
-          git push --force --verbose --dry-run
-          git push --force
+        
+        # Test the effects of pushing
+        git push --force --verbose --dry-run
+        
+        # ! Warning: this is not reversible !
+        git push --force
           
         # git removes empty dir's so we need to remake it
         mkdir app
@@ -277,7 +283,7 @@ Updating the Pull Request branch automatically triggers the pipeline again.  You
 
 In the feedback you should see information regarding any vulnerabilities that were found in the image.  When you went through the environment setup you specified a vulnerability threshold of **"High"**, which means that the build will fail if an image contains any High or Critical vulnerabilities. Specifying a threshold allows you to put in a place a risk tolerance for different severities of vulnerabilities. This allows your developers to continue to move quickly with low risk vulnerabilities that can be triaged and fixed later on.  In the current setup, all vulnerabilities below the threshold will be pushed to AWS Security Hub.
 
-Since the build fails the vulnerability analysis stage we need to fix the issue with so that the image does not contain any **"High"** rated vulnerabilitiy.
+Since the build fails the vulnerability analysis stage we need to fix the issue with so that the image does not contain any **"High"** rated vulnerability.
 
 1.  Go to the <a href="https://us-east-2.console.aws.amazon.com/securityhub/" target="_blank">Security Hub</a> console.
 
