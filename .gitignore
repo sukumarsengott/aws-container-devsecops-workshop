@@ -9,6 +9,10 @@ docs/.DS_Store
 # pyenv
 .python-version
 
+# pycharm
+/.idea
+/venv
+
 # vscode
 settings.json
 *.js
