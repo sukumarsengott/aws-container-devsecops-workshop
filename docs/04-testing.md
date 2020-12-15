@@ -10,7 +10,7 @@ Now that you have integrated multiple types of security testing into your pipeli
 
 1. **Commit**: Developer makes a commit to the *Development* branch.
 2. **Pull Request**: Developer makes a Pull Request
-    * Source Branch: *Developement*
+    * Source Branch: *Development*
     * Destination Branch: *Master*
 3. **Triggers Rule**: A CloudWatch Event Rule is triggered based on the following events:
     * *pullRequestSourceBranchUpdated*
@@ -25,11 +25,11 @@ Now that you have integrated multiple types of security testing into your pipeli
     *  CodeCommit repository: *container-devsecops-wksp-config (master branch)*
 7. **Dockerfile Linting Stage**: This stage pulls in the artifacts from S3 and uses Hadolint (build spec file and configuration file pulled in from S3) to lint the Dockerfile to ensure it adheres to best practices.
 8.  **Secrets Scanning Stage**: This stage runs high signal regex checks directly against the CodeCommit Repository (*container-devsecops-wksp-app - development branch*)
-9.  **Vulnerability Scanning Stage**: This stage builds the container image, pushes it to ECR, and triggers an Anchore vulnerability assessment against the image.  If the scan results include any vulnerabilites that meet or exceed the threshold the build fails.  If the vulnerabilities are lower than the set threshold, the CodeBuild project will invoke a Lambda function with the scan results as the payload.  The Lambda function will then push the vulnerabilities into AWS Security Hub for future triaging, since the risk for those have been accepted.
-10.  **Publish Imaeg**: This last stage builds the image using the destination commit hash as the tag and publishes it to AWS ECR.
+9.  **Vulnerability Scanning Stage**: This stage builds the container image, pushes it to ECR, and triggers an Anchore vulnerability assessment against the image.  If the scan results include any vulnerabilities that meet or exceed the threshold the build fails.  If the vulnerabilities are lower than the set threshold, the CodeBuild project will invoke a Lambda function with the scan results as the payload.  The Lambda function will then push the vulnerabilities into AWS Security Hub for future triaging, since the risk for those have been accepted.
+10.  **Publish Image**: This last stage builds the image using the destination commit hash as the tag and publishes it to AWS ECR.
 11. **CodeBuild Triggers**: If any CodeBuild Project fails a CloudWatch Event Rule is triggered.
 12. **Triggers Lambda Function**: The Lambda Function is setup as a target for the CloudWatch Event Rule and is invoked after the CloudWatch Event Rule is triggered.
-13. **Adds Feedback to Pull Request**:  The Lambda Function takes the results from each stage and CodeBuild project and posts a comment back to the Pull Requst.  This gives the developers fast feedback so they're able to fix any issues that are identified through the pipeline.
+13. **Adds Feedback to Pull Request**:  The Lambda Function takes the results from each stage and CodeBuild project and posts a comment back to the Pull Request.  This gives the developers fast feedback so they're able to fix any issues that are identified through the pipeline.
 
 ## Make a commit
 
@@ -81,7 +81,10 @@ In the feedback you should see multiple defects that were identified by the Dock
 
         **Description**:  Using externally provided images can result in the same types of risks that external software traditionally has, such as introducing malware, leaking data, or including components with vulnerabilities. To prevent the use of externally provided images you should only pull images from trusted registries.
 
-        **Fix**: Add `- http://hub.docker.com/` under ***trustedRegistries***.  
+        **Fix**: Under ***trustedRegistries*** add 
+        
+            - http://hub.docker.com/
+            - docker.io  
         
         **Explanation**:  Since the image is pulling from Dockerhub we can include it on the list so that the build is able to pass.  Adding Dockerhub is purely for testing purposes, in reality you would whitelist trusted registries that you host yourself or registries hosted by trusted 3rd parties.
 
@@ -107,7 +110,7 @@ The next two defects can be fixed by modifying the Dockerfile.
 
         **Description**: To adhere the principals of least privileges, your containers should not be running as root.  Most containerized processes are application services and therefore don’t require root access. 
 
-        **Fix**: Change USER to a non privileged user.  Add the following to the Dockerfile **underneath RUN apk**:
+        **Fix**: Change USER to a non privileged user.  Add the following to the Dockerfile **underneath LABEL maintainer**:
 
         `RUN adduser sasquatch -D`
 
@@ -226,11 +229,45 @@ git push -u origin development
 ```
 
 !!! info "Embedded clear text secrets"
-    **Description**: Many applications require secrets to enable communication with other serivces or backend components.  When an application is packaged into an image, these secrets can be embedded directly into the image.  This creates a security risk in which anyone with access to the image can easily obtain the secrets.
+    **Description**: Many applications require secrets to enable communication with other services or backend components.  When an application is packaged into an image, these secrets can be embedded directly into the image.  This creates a security risk in which anyone with access to the image can easily obtain the secrets.
 
-    **Fix**: Remove secrets from source code and leverage a secure solution for managing secrets like <a href="https://aws.amazon.com/secrets-manager/" target="_blank">AWS Secrets Manager</a> or <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html" target="_blank">AWS Systems Manager Parameter Store</a>.
+    **Fix**: Remove secrets from source code and leverage a secure solution for managing secrets like 
+    <a href="https://aws.amazon.com/secrets-manager/" target="_blank">AWS Secrets Manager</a> 
+    or <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html" target="_blank">AWS Systems Manager Parameter Store</a>.
 
-    **Explanation**: Best practice is to the remove secrets from all previous commits and rotate any credential found but due to time constraints you removed the secret and modified the scanning tool to only scan new commits.
+    **Explanation**: Best practice is to the remove secrets from all previous commits and rotate any credential found. 
+    For simplicity in the workshop, we removed the secret and modified the scanning tool to only scan new commits.
+    
+    
+    **Optional**: To remove the commit from git's history (other developers will need to reclone the repo afterward):
+    
+        # After we removed the secret from the index.py file
+        cd /home/ec2-user/environment/sample-application
+        
+        # Need to have a clean working directory
+        git add *
+        git commit -m "Removing secrets from app.py"
+        
+        # Need a perserve a copy of the app file
+        cp app/index.py /home/ec2-user/environment/tmp_index.py
+        
+        # Remove the file from all of git history, other developers will need to reclone repo
+        git filter-branch --force --index-filter \
+          "git rm --cached --ignore-unmatch app/index.py" \
+          --prune-empty --tag-name-filter cat -- --all
+        
+        # Test the effects of pushing
+        git push --force --verbose --dry-run
+        
+        # ! Warning: this is not reversible !
+        git push --force
+          
+        # git removes empty dir's so we need to remake it
+        mkdir app
+        
+        # restore the app file from disk
+        cp /home/ec2-user/environment/tmp_index.py app/index.py
+        rm /home/ec2-user/environment/tmp_index.py
 
     **Reference**: <a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-190.pdf" target="_blank">NIST SP 800-190: Application Container Security Guide - 3.1.4</a>
 
@@ -246,7 +283,7 @@ Updating the Pull Request branch automatically triggers the pipeline again.  You
 
 In the feedback you should see information regarding any vulnerabilities that were found in the image.  When you went through the environment setup you specified a vulnerability threshold of **"High"**, which means that the build will fail if an image contains any High or Critical vulnerabilities. Specifying a threshold allows you to put in a place a risk tolerance for different severities of vulnerabilities. This allows your developers to continue to move quickly with low risk vulnerabilities that can be triaged and fixed later on.  In the current setup, all vulnerabilities below the threshold will be pushed to AWS Security Hub.
 
-Since the build fails the vulnerability analysis stage we need to fix the issue with so that the image does not contain any **"High"** rated vulnerabilitiy.
+Since the build fails the vulnerability analysis stage we need to fix the issue with so that the image does not contain any **"High"** rated vulnerability.
 
 1.  Go to the <a href="https://us-east-2.console.aws.amazon.com/securityhub/" target="_blank">Security Hub</a> console.
 

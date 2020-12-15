@@ -3,7 +3,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-access key = AKIAZELJK6BJF5234HAC
+access_key = "AKIAZELJK6BJF5234HAC"
 
 @app.route("/")
 def hello():
