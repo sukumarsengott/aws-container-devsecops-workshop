@@ -483,7 +483,7 @@
 <ol>
 <li><strong>Commit</strong>: Developer makes a commit to the <em>Development</em> branch.</li>
 <li><strong>Pull Request</strong>: Developer makes a Pull Request<ul>
-<li>Source Branch: <em>Developement</em></li>
+<li>Source Branch: <em>Development</em></li>
 <li>Destination Branch: <em>Master</em></li>
 </ul>
 </li>
@@ -506,11 +506,11 @@
 </li>
 <li><strong>Dockerfile Linting Stage</strong>: This stage pulls in the artifacts from S3 and uses Hadolint (build spec file and configuration file pulled in from S3) to lint the Dockerfile to ensure it adheres to best practices.</li>
 <li><strong>Secrets Scanning Stage</strong>: This stage runs high signal regex checks directly against the CodeCommit Repository (<em>container-devsecops-wksp-app - development branch</em>)</li>
-<li><strong>Vulnerability Scanning Stage</strong>: This stage builds the container image, pushes it to ECR, and triggers an Anchore vulnerability assessment against the image.  If the scan results include any vulnerabilites that meet or exceed the threshold the build fails.  If the vulnerabilities are lower than the set threshold, the CodeBuild project will invoke a Lambda function with the scan results as the payload.  The Lambda function will then push the vulnerabilities into AWS Security Hub for future triaging, since the risk for those have been accepted.</li>
-<li><strong>Publish Imaeg</strong>: This last stage builds the image using the destination commit hash as the tag and publishes it to AWS ECR.</li>
+<li><strong>Vulnerability Scanning Stage</strong>: This stage builds the container image, pushes it to ECR, and triggers an Anchore vulnerability assessment against the image.  If the scan results include any vulnerabilities that meet or exceed the threshold the build fails.  If the vulnerabilities are lower than the set threshold, the CodeBuild project will invoke a Lambda function with the scan results as the payload.  The Lambda function will then push the vulnerabilities into AWS Security Hub for future triaging, since the risk for those have been accepted.</li>
+<li><strong>Publish Image</strong>: This last stage builds the image using the destination commit hash as the tag and publishes it to AWS ECR.</li>
 <li><strong>CodeBuild Triggers</strong>: If any CodeBuild Project fails a CloudWatch Event Rule is triggered.</li>
 <li><strong>Triggers Lambda Function</strong>: The Lambda Function is setup as a target for the CloudWatch Event Rule and is invoked after the CloudWatch Event Rule is triggered.</li>
-<li><strong>Adds Feedback to Pull Request</strong>:  The Lambda Function takes the results from each stage and CodeBuild project and posts a comment back to the Pull Requst.  This gives the developers fast feedback so they're able to fix any issues that are identified through the pipeline.</li>
+<li><strong>Adds Feedback to Pull Request</strong>:  The Lambda Function takes the results from each stage and CodeBuild project and posts a comment back to the Pull Request.  This gives the developers fast feedback so they're able to fix any issues that are identified through the pipeline.</li>
 </ol>
 <h2 id="make-a-commit">Make a commit</h2>
 <p>Now you can test your pipeline to see how your Pull Requests result with an image being built and pushed to AWS ECR. First, make a commit to the <em>development branch</em> of your sample application</p>
@@ -558,7 +558,12 @@
 <p class="admonition-title">Use of untrusted images</p>
 <p><strong>DL3026</strong>: Use only an allowed registry in the FROM image</p>
 <p><strong>Description</strong>:  Using externally provided images can result in the same types of risks that external software traditionally has, such as introducing malware, leaking data, or including components with vulnerabilities. To prevent the use of externally provided images you should only pull images from trusted registries.</p>
-<p><strong>Fix*<em>: Add <code>- http://hub.docker.com/</code> under </em></strong>trustedRegistries***.  </p>
+<p><strong>Fix*<em>: Under </em></strong>trustedRegistries*** add </p>
+<div class="codehilite"><pre><span></span><code><span class="err">- http://hub.docker.com/</span>
+<span class="err">- docker.io</span>
+</code></pre></div>
+
+
 <p><strong>Explanation</strong>:  Since the image is pulling from Dockerhub we can include it on the list so that the build is able to pass.  Adding Dockerhub is purely for testing purposes, in reality you would whitelist trusted registries that you host yourself or registries hosted by trusted 3rd parties.</p>
 <p><strong>Reference</strong>: <a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-190.pdf" target="_blank">NIST SP 800-190: Application Container Security Guide - 3.1.5</a></p>
 </div>
@@ -585,7 +590,7 @@ git push -u origin master
 <p class="admonition-title">Image configuration defects</p>
 <p><strong>DL3002</strong>: Last USER should not be root.</p>
 <p><strong>Description</strong>: To adhere the principals of least privileges, your containers should not be running as root.  Most containerized processes are application services and therefore don’t require root access. </p>
-<p><strong>Fix</strong>: Change USER to a non privileged user.  Add the following to the Dockerfile <strong>underneath RUN apk</strong>:</p>
+<p><strong>Fix</strong>: Change USER to a non privileged user.  Add the following to the Dockerfile <strong>underneath LABEL maintainer</strong>:</p>
 <p><code>RUN adduser sasquatch -D</code></p>
 <p>Next, replace <code>USER root</code> with <code>USER sasquatch</code></p>
 <p><strong>Explanation</strong>: By creating a user in your Dockerfile, you are making it not only secure by default but also easier to keep secure.</p>
@@ -697,9 +702,43 @@ git push -u origin development
 
 <div class="admonition info">
 <p class="admonition-title">Embedded clear text secrets</p>
-<p><strong>Description</strong>: Many applications require secrets to enable communication with other serivces or backend components.  When an application is packaged into an image, these secrets can be embedded directly into the image.  This creates a security risk in which anyone with access to the image can easily obtain the secrets.</p>
-<p><strong>Fix</strong>: Remove secrets from source code and leverage a secure solution for managing secrets like <a href="https://aws.amazon.com/secrets-manager/" target="_blank">AWS Secrets Manager</a> or <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html" target="_blank">AWS Systems Manager Parameter Store</a>.</p>
-<p><strong>Explanation</strong>: Best practice is to the remove secrets from all previous commits and rotate any credential found but due to time constraints you removed the secret and modified the scanning tool to only scan new commits.</p>
+<p><strong>Description</strong>: Many applications require secrets to enable communication with other services or backend components.  When an application is packaged into an image, these secrets can be embedded directly into the image.  This creates a security risk in which anyone with access to the image can easily obtain the secrets.</p>
+<p><strong>Fix</strong>: Remove secrets from source code and leverage a secure solution for managing secrets like 
+<a href="https://aws.amazon.com/secrets-manager/" target="_blank">AWS Secrets Manager</a> 
+or <a href="https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html" target="_blank">AWS Systems Manager Parameter Store</a>.</p>
+<p><strong>Explanation</strong>: Best practice is to the remove secrets from all previous commits and rotate any credential found. 
+For simplicity in the workshop, we removed the secret and modified the scanning tool to only scan new commits.</p>
+<p><strong>Optional</strong>: To remove the commit from git's history (other developers will need to reclone the repo afterward):</p>
+<div class="codehilite"><pre><span></span><code><span class="o">#</span> <span class="k">After</span> <span class="n">we</span> <span class="n">removed</span> <span class="n">the</span> <span class="n">secret</span> <span class="k">from</span> <span class="n">the</span> <span class="k">index</span><span class="p">.</span><span class="n">py</span> <span class="n">file</span>
+<span class="n">cd</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">ec2</span><span class="o">-</span><span class="k">user</span><span class="o">/</span><span class="n">environment</span><span class="o">/</span><span class="n">sample</span><span class="o">-</span><span class="n">application</span>
+
+<span class="o">#</span> <span class="n">Need</span> <span class="k">to</span> <span class="n">have</span> <span class="n">a</span> <span class="n">clean</span> <span class="n">working</span> <span class="n">directory</span>
+<span class="n">git</span> <span class="k">add</span> <span class="o">*</span>
+<span class="n">git</span> <span class="k">commit</span> <span class="o">-</span><span class="n">m</span> <span class="ss">&quot;Removing secrets from app.py&quot;</span>
+
+<span class="o">#</span> <span class="n">Need</span> <span class="n">a</span> <span class="n">perserve</span> <span class="n">a</span> <span class="k">copy</span> <span class="k">of</span> <span class="n">the</span> <span class="n">app</span> <span class="n">file</span>
+<span class="n">cp</span> <span class="n">app</span><span class="o">/</span><span class="k">index</span><span class="p">.</span><span class="n">py</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">ec2</span><span class="o">-</span><span class="k">user</span><span class="o">/</span><span class="n">environment</span><span class="o">/</span><span class="n">tmp_index</span><span class="p">.</span><span class="n">py</span>
+
+<span class="o">#</span> <span class="n">Remove</span> <span class="n">the</span> <span class="n">file</span> <span class="k">from</span> <span class="k">all</span> <span class="k">of</span> <span class="n">git</span> <span class="n">history</span><span class="p">,</span> <span class="n">other</span> <span class="n">developers</span> <span class="n">will</span> <span class="n">need</span> <span class="k">to</span> <span class="n">reclone</span> <span class="n">repo</span>
+<span class="n">git</span> <span class="n">filter</span><span class="o">-</span><span class="n">branch</span> <span class="c1">--force --index-filter \</span>
+  <span class="ss">&quot;git rm --cached --ignore-unmatch app/index.py&quot;</span> <span class="err">\</span>
+  <span class="c1">--prune-empty --tag-name-filter cat -- --all</span>
+
+<span class="o">#</span> <span class="n">Test</span> <span class="n">the</span> <span class="n">effects</span> <span class="k">of</span> <span class="n">pushing</span>
+<span class="n">git</span> <span class="n">push</span> <span class="c1">--force --verbose --dry-run</span>
+
+<span class="o">#</span> <span class="o">!</span> <span class="n">Warning</span><span class="p">:</span> <span class="n">this</span> <span class="k">is</span> <span class="k">not</span> <span class="n">reversible</span> <span class="o">!</span>
+<span class="n">git</span> <span class="n">push</span> <span class="c1">--force</span>
+
+<span class="o">#</span> <span class="n">git</span> <span class="n">removes</span> <span class="n">empty</span> <span class="n">dir</span><span class="err">&#39;</span><span class="n">s</span> <span class="n">so</span> <span class="n">we</span> <span class="n">need</span> <span class="k">to</span> <span class="n">remake</span> <span class="n">it</span>
+<span class="n">mkdir</span> <span class="n">app</span>
+
+<span class="o">#</span> <span class="n">restore</span> <span class="n">the</span> <span class="n">app</span> <span class="n">file</span> <span class="k">from</span> <span class="n">disk</span>
+<span class="n">cp</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">ec2</span><span class="o">-</span><span class="k">user</span><span class="o">/</span><span class="n">environment</span><span class="o">/</span><span class="n">tmp_index</span><span class="p">.</span><span class="n">py</span> <span class="n">app</span><span class="o">/</span><span class="k">index</span><span class="p">.</span><span class="n">py</span>
+<span class="n">rm</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">ec2</span><span class="o">-</span><span class="k">user</span><span class="o">/</span><span class="n">environment</span><span class="o">/</span><span class="n">tmp_index</span><span class="p">.</span><span class="n">py</span>
+</code></pre></div>
+
+
 <p><strong>Reference</strong>: <a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-190.pdf" target="_blank">NIST SP 800-190: Application Container Security Guide - 3.1.4</a></p>
 </div>
 <p><strong>View the Pull Request Feedback</strong></p>
@@ -711,7 +750,7 @@ git push -u origin development
 </ol>
 <h2 id="view-vulnerabilities">View vulnerabilities</h2>
 <p>In the feedback you should see information regarding any vulnerabilities that were found in the image.  When you went through the environment setup you specified a vulnerability threshold of <strong>"High"</strong>, which means that the build will fail if an image contains any High or Critical vulnerabilities. Specifying a threshold allows you to put in a place a risk tolerance for different severities of vulnerabilities. This allows your developers to continue to move quickly with low risk vulnerabilities that can be triaged and fixed later on.  In the current setup, all vulnerabilities below the threshold will be pushed to AWS Security Hub.</p>
-<p>Since the build fails the vulnerability analysis stage we need to fix the issue with so that the image does not contain any <strong>"High"</strong> rated vulnerabilitiy.</p>
+<p>Since the build fails the vulnerability analysis stage we need to fix the issue with so that the image does not contain any <strong>"High"</strong> rated vulnerability.</p>
 <ol>
 <li>
 <p>Go to the <a href="https://us-east-2.console.aws.amazon.com/securityhub/" target="_blank">Security Hub</a> console.</p>
