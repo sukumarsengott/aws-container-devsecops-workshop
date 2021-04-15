@@ -105,6 +105,7 @@ Resources:
                 python: 3.7
             pre_build: 
               commands:
+                - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
                 - apt-get update && apt-get install -y python-dev
                 - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py  
                 - python get-pip.py
