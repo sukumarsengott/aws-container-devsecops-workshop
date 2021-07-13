@@ -304,8 +304,8 @@ Since the build fails the vulnerability analysis stage we need to fix the issue 
 
         **Fix**: Containers should be looked at as immutable and as such shouldn't be patched directly. Instead the vulernabilities should be fixed upstream in the source code and configuration of the image and then the image should be rebuilt and published.  This ensures that all new containers instantiated from the image don't include the vulnerabilities.
 
-        Update the affected package in Dockerfile:
-        Following the recommended **Remediation** update the `flask-cors` version to `3.0.9` in the Dockerfile.
+        Update the affected package in requirements.txt:
+        Following the recommended **Remediation** update the `flask-cors` version to `3.0.9` in requirements.txt.
 
         `flask-cors <= 3.0.9`
 
@@ -315,7 +315,7 @@ Commit your application source code changes:
 
 ```bash
 cd /home/ec2-user/environment/sample-application
-git add Dockerfile
+git add requirements.txt
 git commit -m "Update flask-cors version to fix CVE-2020-25032"
 git push -u origin development
 ```
