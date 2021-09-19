@@ -233,6 +233,7 @@ Resources:
     Properties:
       AWSServiceName: ecs.amazonaws.com
       Description: Role to enable Amazon ECS to manage your cluster.
+
   Cluster:
     Type: AWS::ECS::Cluster
     DependsOn: EcsSlr
