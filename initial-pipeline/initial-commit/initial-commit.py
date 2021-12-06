@@ -1,9 +1,9 @@
 from __future__ import print_function
-from urllib2 import build_opener, HTTPHandler, Request
+import urllib.request
 from botocore.exceptions import ClientError
 import boto3
 import json
-import httplib
+import http.client
 import os
 
 def handler(event, context):
