@@ -26,7 +26,7 @@ Parameters:
     Default: sa-security-specialist-workshops-us-east-2
     Description: Source bucket for workshop CloudFormation yaml's
 
-Metadata: 
+Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups: 
       - 
@@ -127,7 +127,7 @@ Resources:
       Code: 
         S3Bucket: !Ref BucketName
         S3Key: 'devsecops/containers/initial-commit.zip'
-      Runtime: "python2.7"
+      Runtime: "python3.9"
       Timeout: "35"
   
   ### ECR Repository
@@ -323,7 +323,7 @@ Resources:
                 name=pipeline,
               )
             
-      Runtime: "python2.7"
+      Runtime: "python3.9"
       Timeout: "35"
       MemorySize: 128
 
@@ -440,7 +440,7 @@ Resources:
             ssm.delete_parameter(
               Name='codebuild-dockerfile-results'
             )
-      Runtime: "python2.7"
+      Runtime: "python3.9"
       Timeout: "35"
       MemorySize: 128
 
@@ -546,7 +546,7 @@ Resources:
               afterCommitId = destination_commit['Parameter']['Value'],
               content = content
             )
-      Runtime: "python2.7"
+      Runtime: "python3.9"
       Timeout: "35"
       MemorySize: 128
 
@@ -652,7 +652,7 @@ Resources:
               afterCommitId = destination_commit['Parameter']['Value'],
               content = content
             )
-      Runtime: "python2.7"
+      Runtime: "python3.9"
       Timeout: "35"
       MemorySize: 128
 
@@ -773,7 +773,7 @@ Resources:
                   'destinationCommit'
               ]
             )
-      Runtime: "python2.7"
+      Runtime: "python3.9"
       Timeout: "35"
       MemorySize: 128
 

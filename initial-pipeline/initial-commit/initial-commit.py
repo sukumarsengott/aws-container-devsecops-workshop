@@ -1,9 +1,8 @@
 from __future__ import print_function
-import urllib.request
+import urllib3
 from botocore.exceptions import ClientError
 import boto3
 import json
-import http.client
 import os
 
 def handler(event, context):
@@ -32,7 +31,7 @@ def handler(event, context):
             secretsConfigPath = os.environ['LAMBDA_TASK_ROOT'] + "/secrets_config.json"
             secretsConfig = open(secretsConfigPath).read()
 
-            # Read in files for Vulnerability Scanning 
+            # Read in files for Vulnerability Scanning
             buildspecPathVuln = os.environ['LAMBDA_TASK_ROOT'] + "/buildspec_vuln.yml"
             buildspecVuln = open(buildspecPathVuln).read()
 
@@ -151,6 +150,7 @@ def handler(event, context):
             response = sendResponse(event, context, "SUCCESS", { "Message": "Initial commits - Success" })
         except ClientError as e:
             print(e)
+        #TODO - below "Initial commits - Error" should be executed only for ClientError. indentation issue?
         response = sendResponse(event, context, "SUCCESS", { "Message": "Initial commits - Error" })
     elif event['RequestType'] == 'Update':
         print("log -- Update Event")
@@ -177,12 +177,11 @@ def sendResponse(event, context, responseStatus, responseData):
         "LogicalResourceId": event['LogicalResourceId'],
         "Data": responseData
     })
-    opener = build_opener(HTTPHandler)
-    request = Request(event['ResponseURL'], data=responseBody)
-    request.add_header('Content-Type', '')
-    request.add_header('Content-Length', len(responseBody))
-    request.get_method = lambda: 'PUT'
-    response = opener.open(request)
-    print("Status code: {}".format(response.getcode()))
-    print("Status message: {}".format(response.msg))
+    encoded_data = responseBody.encode('utf-8')
+    hdr = {'Content-Type': ''}
+    http = urllib3.PoolManager()
+    response= http.urlopen('PUT', event['ResponseURL'],body=encoded_data, headers=hdr)
+    resp_body = response.data.decode('utf-8')
+    print("Status code: {}".format(response.status))
+    print("Status message: {}".format(resp_body))
     return responseBody
